@@ -28,4 +28,4 @@ coverage
 *.sw?
 
 # environmental vars
-.env.*
+.env

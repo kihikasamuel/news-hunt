@@ -1,8 +1,8 @@
 import http from '@/http-common';
 
 class Service {
-    getAll(param: string): Promise<any>{
-        return http.get(`/everything?q=${param}`)
+    getAll(query: string, page_size: number, page_number: number, sort_term: string): Promise<any>{
+        return http.get(`/everything?q=${query}&pageSize=${page_size}&page=${page_number}&sortBy=${sort_term}`)
     }
 }
 

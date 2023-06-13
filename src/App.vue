@@ -20,7 +20,16 @@ import { RouterLink, RouterView } from 'vue-router';
 
         <ul class="flex items-center gap-2 text-sm font-medium text-gray-500">
           <li class="lg:block">
-            <RouterLink class="rounded-lg px-3 py-2" to="/"> Home </RouterLink>
+            <RouterLink class="rounded-lg px-3 py-2" to="/"> Technology </RouterLink>
+          </li>
+          <li class="lg:block">
+            <RouterLink class="rounded-lg px-3 py-2" to="/"> Sports </RouterLink>
+          </li>
+          <li class="lg:block">
+            <RouterLink class="rounded-lg px-3 py-2" to="/"> Technology </RouterLink>
+          </li>
+          <li class="lg:block">
+            <RouterLink class="rounded-lg px-3 py-2" to="/"> Technology </RouterLink>
           </li>
 
           <li><RouterLink class="rounded-lg px-3 py-2" to="/"> About the Developer </RouterLink></li>
