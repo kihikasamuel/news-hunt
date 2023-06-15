@@ -1,10 +1,12 @@
 <template>
-  <main v-if="sorted_news" class="mt-10 min-h-screen grid grid-cols-12 p-4">
-    <div v-for="(article, index) in sorted_news" :key="index" class="flex md:flex-row col-span-12 md:col-span-4 p-4 justify-center">
-      <NewsArticle :article="article" />
-    </div>
-    <div class="inline-flex items-center justify-center gap-3">
-      <a href="#" @click.prevent="decrement(pageNumber)" class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
+  <main v-if="sorted_news" class="mt-10 w-full min-h-screen grid grid-cols-12 p-4">
+    <TransitionGroup name="list">
+      <div v-for="(article, index) in sorted_news" :key="index" class="col-span-12 md:col-span-4 flex md:flex-row p-4 h-fit justify-center">
+        <NewsArticle :article="article" />
+      </div>
+    </TransitionGroup>
+    <div class="col-span-12 flex md:flex-row justify-center">
+      <a href="#" @click.prevent="decrement(pageNumber)" class="inline-flex pr-2 h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
         <span class="sr-only">Prev</span>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
           <path
@@ -14,9 +16,9 @@
         </svg>
       </a>
 
-      <p class="text-xs text-gray-900">{{ pageNumber }}<span class="mx-0.25">/</span>{{ totalPages }}</p>
+      <span class="text-xs text-gray-900">{{ pageNumber }}<span class="inline-flex justify-center">/</span>{{ totalPages }}</span>
 
-      <a href="#" @click.prevent="increment(pageNumber)" class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
+      <a href="#" @click.prevent="increment(pageNumber)" class="inline-flex pl-2 h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
         <span class="sr-only">Next</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -33,69 +35,85 @@
       </a>
     </div>
   </main>
-  <main v-else-if="!sorted_news" id="else-block" class="mt-10 min-h-screen grid grid-cols-12 p-4">
-      <p class="text-black font-bold">Loading...</p>
-  </main>
+  <!-- <div v-if="loader" class="mt-10 flex justify-center">
+    <p>Loading...</p>
+  </div> -->
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref } from 'vue';
+import { computed, defineComponent, ref, watch, watchEffect, type PropType } from 'vue';
 import NewsArticle from '../components/NewsArticle.vue';
 import type Article from '@/types/Article';
 import Service from '@/services/Service'
 import type ResponseData from '@/types/ResponseData';
-import { watch } from 'vue';
 
 export default defineComponent ({
   name: "HomePage",
   components: {
     NewsArticle
   },
-  setup() {
+  props: {
+    searchQuery: {
+      required: true,
+      type: String as PropType<string>
+    }
+  },
+  setup(props) {
 
     const news = ref<Article[]>([]);
-    let query_param: string = "technology";
     let page_size: number = 12;
     let pageNumber = ref<number>(1);
     let sort_term: string = "publishedAt";
-    let totalRecords: number = 50;
-
-    async function getNews(param: string, page_size: number, pageNumber: number, sort_term: string) {
-      let response: ResponseData = await Service.getAll(param, page_size, pageNumber, sort_term);
-      if(response.data.status === "ok") {
-        totalRecords = response.data.totalResults
-        return news.value.push(...response.data.articles);
-      }
-      else {
-        return news.value = [];
-      }
-    }
-
-    getNews(query_param, page_size, pageNumber.value, sort_term);
-        
-    // let getNews run inside a watcher
-    
-    const sorted_news = computed(() => {
-      return [...news.value].sort((a: Article, b: Article) => a['publishedAt'] > b['publishedAt'] ? -1 : 1)
-      // return news.value.slice(0).sort((a: Article, b: Article) => a['publishedAt'] > b['publishedAt'] ? -1 : 1)
-    })
+    let totalRecords = ref<number>(1);
+    let loader: boolean = false
 
     const totalPages = computed(() => {
-      return Math.ceil(totalRecords / page_size);
+      return Math.ceil(totalRecords.value / page_size);
     })
 
 
     const increment = (page: number) => {
-      console.log(page, pageNumber.value)
       page < totalPages.value ? pageNumber.value += 1 : pageNumber.value = totalPages.value;
     }
 
     const decrement = (page: number) => {
       page > 1 ? pageNumber.value -= 1 : pageNumber.value = 1;
     }
+
+    watchEffect( async () => {
+      loader = true;
+      const response: ResponseData = await Service.getAll(props.searchQuery, page_size, pageNumber.value, sort_term);
+      news.value = response.data.articles
+      totalRecords.value = response.data.totalResults
+      loader = false
+    })
+
+    watch(() => props.searchQuery, () => {
+      pageNumber.value = 1;
+    })
+
+    const sorted_news = computed(() => {
+      return [...news.value].sort((a: Article, b: Article) => a['publishedAt'] > b['publishedAt'] ? -1 : 1)
+    })
     
 
-    return { sorted_news, totalPages, pageNumber, increment, decrement }
+    return { sorted_news, totalPages, pageNumber, increment, decrement, loader }
   }
 })
 </script>
+
+<style scoped>
+  .list-enter-active, .list-leave-active {
+    transition: all 0.5s ease-out;
+  }
+
+  .list-enter-from, .list-leave-to {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  .list-enter-to, .list-leave-from {
+    opacity: 1;
+    transform:translate(30px);
+  }
+</style>

@@ -1,6 +1,6 @@
 <template>
   <article
-    class="sm:w-full rounded-lg border-2 border-gray-200 bg-white shadow-sm"
+    class="w-full rounded-lg border-2 border-gray-200 bg-white shadow-sm"
   >
     <img
       :alt="`${ article.title }`"
@@ -20,7 +20,8 @@
       </p>
 
       <a
-        href="#"
+        :href="`${article.url}`"
+        target="_blank"
         class="group mt-4 inline-flex items-center gap-1 text-sm font-medium text-blue-600"
       >
         Read full article
