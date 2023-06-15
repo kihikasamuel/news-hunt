@@ -5,7 +5,8 @@ const http: AxiosInstance = axios.create({
     baseURL: "https://newsapi.org/v2",
     headers: {
         "Content-Type": "application/json",
-        "Authorization": import.meta.env["VITE_NEWS_API_KEY"]
+        "Authorization": import.meta.env["VITE_NEWS_API_KEY"],
+        "Access-Control-Allow-Origin": "*"
     },
     timeout: 10_000
 });
